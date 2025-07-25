@@ -1,0 +1,157 @@
+[
+  {
+    "id": "introduction",
+    "title": "Introduction",
+    "body": "This is implementation of a performant, generic, multiplayer-ready Attribute System for RPG / RTS projects. The system works by network replicating Gameplay Tags instead of reproducing the raw state of Unreal Objects . With this setup we can create complex attribute calculations without having to rework the network code everytime game decide to change some idea of implementation details of a project. Since RPG games require a ridiculous large amount of attribute calculations, across multiple entangled systems, this is a core component for the development of any higher level system to be implemented."
+  },
+  {
+    "id": "example-component",
+    "title": "Example Component",
+    "body": "**NOTE:**\nSample Blueprint can be found in folder: \\ATT\\Content\\Example\\"
+  },
+  {
+    "id": "ucharacterattributesetcomponent-attributes-component",
+    "title": "UCharacterAttributeSetComponent - Attributes Component",
+    "body": "The Attribute Set Component is properly setup to create, manage the memory, and replicate the data of UCharacterFeature and UCharacterAttribute sub-objects that you create within the Details Panel . Although it's possible to create Blueprints of this component, it's recommended that you add the base Component Class to character blueprints instead, to avoid conflicts with Unreal's serialization system where components of instantiated blueprints can ignore changes to the base component blueprint if the fields of that instance are marked as ' Dirty ' (modified by the user). This is just a minor flaw of the Unreal Editor, but can confuse developers regularly. The Attributes Component can host two sets of properties: UCharacterFeature - Character Features are attributes that usually will serve as base attributes to more dynamic attributes. The main characteristics of these properties are that they can simply output a Base Value or have that same value computed by an input Data Table . In th"
+  },
+  {
+    "id": "getformulatedvalue-custom-fomulas",
+    "title": "GetFormulatedValue() - Custom Fomulas",
+    "body": "Although Attribute Modifiers can be blueprinted, and spawned as blueprints objects, Attributes and Features cannot! Still, there are many situations where designers are going to need or wish they just had a blueprint to develop custom attribute formulas. There's no deny the great usefulness of blueprints, but if go on converting everything to blueprints then they become a performance problem later on. To address this problem, to create custom formulas, designers can generate functions within the parent character blueprint where the function name is mapped to the Gameplay Tag address of that Attribute or Feature. For example: For example: The Attribute Experience is mapped to a | Level | EXP | Data Table and, to return the correct value, the GetFormulatedValue() method of the EXP Attribute would have to track first the actual value of another Attribute: Level . The current output of the Level Attribute can be many, will depend on how many items, weapons, accessories, the character has a"
+  },
+  {
+    "id": "attribute-modifiers-networked-effects",
+    "title": "Attribute Modifiers - Networked Effects",
+    "body": "Modifiers are regular Blueprinted Objects. They cannot Tick and have no World Transform , but contain several helper functions to author any level of attribute calculation you might want to achieve.  ## Note that you cannot apply Modifiers to an Attribute that did not register that Modifier as an Archetype! You must register the Archetype Class of a Modifier to the ModArchetypes list within the \"System\" section of each Attribute considering to use that Modifier sub system; Otherwise the Modifier will not work across the network:"
+  },
+  {
+    "id": "attributes-entanglement-server-pre-calculations",
+    "title": "Attributes Entanglement - Server Pre-Calculations",
+    "body": "In RTS / RPG systems, very frequently, a designed rule requires an attribute to automatically update itself on the Server when another related attribute in the same component has changed. We can't escape this in modern games, but these calculations on the background can cause a networking flood if not taken care closely, one replicated attribute will trigger another and so on... To avoid networking issues, we then create several Helper Functions to conform each different design pattern for each type of attribute before packing a struct to send accross the network. That as well can lead to several calls to different RPCs. One way to avoid those problems is simply mapping Entangled Attributes to this pre-determined list of Base Value transformations we call Entanglement. So instead of creating a custom *Formula for every attribute, we tell the subsystem that every time the Base Value of the Level Atribute changes, we want the Base Value of Experience to be updated as well, at the same fr"
+  },
+  {
+    "id": "attributes-preview-preview-panel",
+    "title": "Attributes Preview - Preview Panel",
+    "body": "To quickly check if you have got your Data Tables or Data Curves setup correctly, you can check the Preview from your Attribute Set Component's Details Panel and see if the values aren't exactly what you're expecting coming out from the GetFormulatedValue() method: Note on some versions of the Unreal Engine 5, these panels may be disabled due to an ongoing visual rework of these panels! Note on some versions of the Unreal Engine 5, these panels may be disabled due to an ongoing visual rework of these panels!"
+  },
+  {
+    "id": "gameplay-tags-unreal-gameplay-tags-system",
+    "title": "Gameplay Tags - Unreal Gameplay Tags System",
+    "body": "The Attribute System by default registers several default Gameplay Tags, but you can either change what is registered by editing the in the ATT_AttributeData.cpp source, or disable them from plugins settings:"
+  },
+  {
+    "id": "what-are-sets",
+    "title": "🔍 What are \"Sets\"?",
+    "body": "Sets in this attribute system are Blueprintable DataAsset templates used to define shared defaults for: Attributes Features Modifiers Traits They simplify prototyping and ensure consistency across multiple instances by allowing reuse of predefined configurations such as base values, gameplay tags, curves, and even UI styles."
+  },
+  {
+    "id": "types-of-sets",
+    "title": "🧱 Types of Sets",
+    "body": "| Set Class                        | Applies To          | Data Structure Used                            |\n|----------------------------------|----------------------|------------------------------------------------|\n| CharacterFeatureSet | Character Features   | FHKH_CharacterFeatureData |\n| CharacterAttributeSet | Character Attributes | FHKH_CharacterAttributeData |\n| CharacterAttributeModifierSet | Attribute Modifiers  | FHKH_CharacterAttributeModifierData |\n| CharacterTraitSet | Traits               | FHKH_CharacterTraitData | Each set acts as a container for initialization data, styling, and specialization logic."
+  },
+  {
+    "id": "attaching-sets-to-attributes-or-features",
+    "title": "🧷 Attaching Sets to Attributes or Features",
+    "body": "To attach a set to an attribute or feature: Open the attribute or feature instance in the Details Panel Locate the Constants slot Assign an appropriate Set (e.g., CharacterAttributeSet for attributes) Once attached, the system reads from the set’s DefaultData and uses its parameters as initialization or fallback values. Once attached, the system reads from the set’s DefaultData and uses its parameters as initialization or fallback values."
+  },
+  {
+    "id": "example-use-cases",
+    "title": "🧪 Example Use Cases",
+    "body": "🧬 Shared Feature Base You create a StrengthFeatureSet with:\n- FeatureTag = ftr.strength - BaseValue = 100 - BaseTable = CharacterStatsTable Attach this to all classes needing a Strength feature with the same baseline. ⚔️ Shared Modifier Logic You define a PoisonModifierSet :\n- Modifier Tag: mod.poison - Lifetime: 10 seconds - Stackable: True , Stack Interval: 1 sec Now any attribute referencing this modifier gets the same behavior, ensuring balance across entities."
+  },
+  {
+    "id": "ui-support",
+    "title": "🎨 UI Support",
+    "body": "Each set can also define: Custom icon (SlateBrush) Description text Color coding Button style for UI styling These assets support both editor tooling and runtime visualization ."
+  },
+  {
+    "id": "sets-summary",
+    "title": "✅ Sets Summary",
+    "body": "Sets offer a clean and centralized way to manage attribute, feature, and modifier definitions They are ideal for prototyping , consistency , and reusability Use the Constants field to assign them in the editor"
+  },
+  {
+    "id": "native-module",
+    "title": "Native Module:",
+    "body": "To have access to the classes from native code you should import the plugin's module to your own, as usual: PrivateDependencyModuleNames.AddRange(new string[] { \"HKH_AttributeSystem\" }); #include \"HKH_AttributeSystem.h\""
+  },
+  {
+    "id": "overview",
+    "title": "🎮 Overview",
+    "body": "This system implements a performant , network-replicated , and Blueprint-integrated attribute framework designed specifically for RPG and RTS projects in Unreal Engine. It uses Gameplay Tags as the primary mechanism for networking and data abstraction, reducing serialization overhead and decoupling implementation details from network logic."
+  },
+  {
+    "id": "key-features",
+    "title": "🚀 Key Features",
+    "body": "🔁 Multiplayer-Ready Replication via GameplayTags and subobject replication ⚙️ Component-Based Attribute & Feature Management 🧮 Customizable Attribute Formulas 🔗 Attribute Entanglement for Dependency Chains 💡 Blueprint-Friendly Modifier System 📊 Preview Tools for Debugging & Balancing"
+  },
+  {
+    "id": "core-classes-concepts",
+    "title": "🧩 Core Classes & Concepts",
+    "body": "🧱 CharacterAttributeSetComponent Main actor component that manages both Features and Attributes . Should be attached directly to Character Blueprints instead of subclassing in Blueprints to avoid Unreal's serialization inconsistencies. Replicated Properties TArray<CharacterFeature*> Features TArray<CharacterAttribute*> Attributes Query Functions CharacterFeature* GetFeatureByTag(FGameplayTag Tag) const;\nCharacterAttribute* GetAttributeByName(FName Name) const; 🧬 CharacterAttribute Defines an attribute (e.g., Health, Mana, XP). Fully network-replicated with support for custom logic, entanglement, traits, and modifiers. Core Properties FName AttributeName;\nFGameplayTag AttributeTag;\nint64 BaseValue;\nFCurveTableRowHandle BaseCurve;\nTMap<FGameplayTag, EntanglementType> Entanglement; Formula Support Custom Blueprint function: int64 att.health(const CharacterAttributeData& Data)\n{\n    return Data.BaseValue + 100; // Example\n} 🔁 Attribute Entanglement Allows automatic updates of dependent att"
+  },
+  {
+    "id": "modifiers-system",
+    "title": "🧩 Modifiers System",
+    "body": "Modifiers are Blueprint-spawned, non-Ticking UObject instances with formula logic to alter attributes dynamically (buffs, debuffs). Lifecycle bool AddModifier(FGameplayTag Tag);\nbool RemoveModifier(FGameplayTag Tag); Registration TMap<FGameplayTag, TSubclassOf<CharacterAttributeModifier>> ModArchetypes;"
+  },
+  {
+    "id": "traits-system",
+    "title": "🧠 Traits System",
+    "body": "Traits represent status effects or toggles, implemented via GameplayTags . Interface bool AddTrait(FGameplayTag Tag);\nbool IsTraitActive(FGameplayTag Tag) const;"
+  },
+  {
+    "id": "preview-system",
+    "title": "🧪 Preview System",
+    "body": "Use the editor details panel to preview formulas, modifiers, and values dynamically."
+  },
+  {
+    "id": "integration-guide",
+    "title": "⚙️ Integration Guide",
+    "body": "Module Setup PrivateDependencyModuleNames.AddRange(new string[] { \"ATT\" });\n#include \"ATT.h\""
+  },
+  {
+    "id": "gameplay-tags-system",
+    "title": "🔖 Gameplay Tags System",
+    "body": "Modify tags in AttributeData.cpp or disable default tags via Plugin Settings."
+  },
+  {
+    "id": "class-diagram",
+    "title": "📊 Class Diagram",
+    "body": ""
+  },
+  {
+    "id": "best-practices",
+    "title": "✅ Best Practices",
+    "body": "Avoid Blueprint subclassing of AttributeSetComponent Use consistent GameplayTags Register modifiers with ModArchetypes Prevent circular entanglements Prefer Blueprint formula functions for design flexibility"
+  },
+  {
+    "id": "system-setup-overview",
+    "title": "🧱 System Setup Overview",
+    "body": "In this system: Experience is typically a Character Feature that tracks progress. Level is another Character Feature that is derived from Experience . Attack Power is often a Character Attribute , but it depends on Level to scale. This means the flow of influence looks like: flowchart LR\n    A[Experience] --> B(Level)\n    B --> C(Attack Power)"
+  },
+  {
+    "id": "step-1-entangling-exp-with-level",
+    "title": "🔗 Step 1: Entangling EXP with Level",
+    "body": "To ensure Level updates when Experience changes , use entanglement : // In Experience attribute\nEntanglement.Add(FGameplayTag(\"Attribute.Status.LV\"), EHKH_Entanglement::OnBaseValueChange); This tells the system: “Every time Experience is updated, recalculate Level 's value.” “Every time Experience is updated, recalculate Level 's value.”"
+  },
+  {
+    "id": "step-2-deriving-level-from-exp-custom-formula",
+    "title": "🧮 Step 2: Deriving Level from EXP (Custom Formula)",
+    "body": "Create a custom Blueprint function in the Character Blueprint named: Attribute::Status::LV Function Signature (required by system): int64 Attribute::Status::LV(const FCharacterAttributeData& Data) Example Logic : Use a DataTable mapping EXP thresholds to levels. If EXP = 5500 ➜ LEVEL = 7\nIf EXP = 7800 ➜ LEVEL = 9 This Blueprint custom formula reads the EXP value and looks up the level using a table like: XPToLevelTable ."
+  },
+  {
+    "id": "step-3-scaling-attack-power-by-level",
+    "title": "⚔️ Step 3: Scaling Attack Power by Level",
+    "body": "Now create another Blueprint function named: Attribute::Status::ATK This is your custom formula for Attack Power. Function Signature : int64 Attribute::Status::ATK(const FCharacterAttributeData& Data) Logic Example : int64 Level = GetAttributeByTag(\"Attribute.Status.LV\")->GetFormulatedValue();\nreturn Level * 10 + 25; This means: “Attack Power increases linearly with Level. Each level gives +10 Attack Power, base value is 25.” “Attack Power increases linearly with Level. Each level gives +10 Attack Power, base value is 25.”"
+  },
+  {
+    "id": "real-time-data-flow",
+    "title": "🔄 Real-Time Data Flow:",
+    "body": "Experience is updated (e.g., via AddModifier or SetBaseValue ) Experience triggers recalculation of Level via entanglement Level recalculates Attack Power through its own formula UI updates based on GetFormulatedValue() of Attack Power"
+  },
+  {
+    "id": "summary",
+    "title": "✅ Summary",
+    "body": "| Attribute       | Role             | Formula Source                         | Depends On          |\n|-----------------|------------------|----------------------------------------|---------------------|\n| Experience      | Progress Tracker | Raw value                              | —                   |\n| Level           | Milestone Marker | Blueprint formula using EXP            | Experience          |\n| Attack Power    | Combat Stat      | Blueprint formula using Level          | Level               |"
+  }
+]
