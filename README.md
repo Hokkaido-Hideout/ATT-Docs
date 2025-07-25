@@ -1,12 +1,13 @@
+
+# RPG ATTRIBUTES SYSTEM
+
+---
+
 <p align="center">
 	<img src="https://www.dropbox.com/scl/fi/3uyxip1lo06d521zlkbd8/ATT.png?rlkey=2vz9rlzzmpqsjll105bz8srfy&st=wryszjnz&raw=1" alt="ATT">
 </p>
 
 ---
-
-# RPG ATTRIBUTES SYSTEM
-
-----------
 
 ## Introduction
 This is implementation of a performant, generic, multiplayer-ready **Attribute System** for RPG / RTS projects.<br>
